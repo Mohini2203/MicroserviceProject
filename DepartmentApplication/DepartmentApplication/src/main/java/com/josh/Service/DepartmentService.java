@@ -2,6 +2,7 @@ package com.josh.Service;
 
 
 import com.josh.Entity.Department;
+import io.dapr.client.domain.CloudEvent;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface DepartmentService {
     Department updateDepartment(Department department, Long id);
 
     void deleteDepartment(Long id);
+
+   // void processCloudEvent(CloudEvent<String> cloudEvent);
 }

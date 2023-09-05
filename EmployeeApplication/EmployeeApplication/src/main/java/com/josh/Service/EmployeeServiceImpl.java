@@ -1,22 +1,23 @@
 package com.josh.Service;
 
-import com.josh.DTO.ProjectDTO;
 import com.josh.Entity.Employee;
 import com.josh.Entity.EmployeeProject;
-
-import com.josh.Entity.EmployeeProjectId;
 import com.josh.Exception.ResourceNotFoundException;
 import com.josh.Repository.EmployeeProjectRepository;
 import com.josh.Repository.EmployeeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 @Service
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -29,8 +30,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     ExternalServiceClient externalServiceClient;
 
+
+    @Autowired
+    NotificationService notificationService;
     @Autowired
     DaprExternalServiceClient daprExternalServiceClient;
+
+
+    private static final String MY_LOCK_KEY = "someLockKey";
+    private final LockRegistry lockRegistry;
+
+
+    public EmployeeServiceImpl(LockRegistry lockRegistry) {
+        this.lockRegistry = lockRegistry;
+    }
 
     @Override
     public List<Employee> getAllEmployee() {
@@ -45,8 +58,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee addEmployee(Employee employee) {
 
-        return employeeRepository.save(employee);
+        Employee saveEmployee = employeeRepository.save(employee);
+        String notificationMessage = "New Employee added with ID: " + saveEmployee.getEmpId() + " and name: " + saveEmployee.getEmpName();
+
+        notificationService.sendNotification(notificationMessage);
+        return saveEmployee;
     }
+//    @Override
+//    public Employee addEmployee(Employee employee) {
+//        Employee saveEmployee = employeeRepository.save(employee);
+//
+//
+//        String employeeMessage = "New Employee added with " + saveEmployee.getEmpId() + " and name " + saveEmployee.getEmpName();
+//
+//
+//        notificationService.sendNotification(employeeMessage);
+//        return saveEmployee;
+//    }
+
 
     @Override
     public Employee updateEmployee(Employee employee, Long empId) {
@@ -62,52 +91,110 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.deleteAll();
     }
 
-//        @Override
-//    public EmployeeProject addEmployeeProject(EmployeeProject employeeProject) {
-//        return employeeProjectRepository.save(employeeProject);
-//    }
-//    @Override
+    @Override
+    public EmployeeProject addEmployeeProject(EmployeeProject employeeProject) {
+        return employeeProjectRepository.save(employeeProject);
+    }
+
+
+    //    @Override
 //    public EmployeeProject addEmployeeProject(EmployeeProject employeeProject) {
 //        Long empId = employeeProject.getEmpId();
 //        Long projectId = employeeProject.getProjectId();
 //
-//        // Check if the resource with the given composite key (empId and projectId) already exists in the database
 //        Optional<EmployeeProject> existingProject = employeeProjectRepository.findById(new EmployeeProjectId(empId, projectId));
 //
 //        if (existingProject.isPresent()) {
 //            throw new ResourceNotFoundException("Employee project with empId " + empId + " and projectId " + projectId + " already exists.");
 //        }
 //
-//        // Check if the employee with the given empId exists in the database
 //        Employee employee = employeeRepository.findById(empId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + empId + " not found."));
 //
-//        // If both the employee and project exist, save the new employee project
+//        ProjectDTO projectDTO = externalServiceClient.getProjectById(projectId);
+//
+//        employeeProject.setEmpId(employee.getEmpId());
+//        employeeProject.setProjectId(projectDTO.getProjectId());
+//
 //        return employeeProjectRepository.save(employeeProject);
 //    }
 
+    @Scheduled(fixedRate = 120000)
+    public String lock() {
+        var lock = lockRegistry.obtain(MY_LOCK_KEY);
+        String returnVal = null;
+        System.out.println("Scheduler Working: ");
+        if (lock.tryLock()) {
+            returnVal = "jdbc lock successful";
+        } else {
+            returnVal = "jdbc lock unsuccessful";
+        }
+        lock.unlock();
+        return returnVal;
+    }
+
+    @Scheduled(fixedRate = 120000)
     @Override
-    public EmployeeProject addEmployeeProject(EmployeeProject employeeProject) {
-        Long empId = employeeProject.getEmpId();
-        Long projectId = employeeProject.getProjectId();
+    public String properLock() {
+        Lock lock = null;
 
-        Optional<EmployeeProject> existingProject = employeeProjectRepository.findById(new EmployeeProjectId(empId, projectId));
-
-        if (existingProject.isPresent()) {
-            throw new ResourceNotFoundException("Employee project with empId " + empId + " and projectId " + projectId + " already exists.");
+        try {
+            //var  lock = lockRegistry.obtain(MY_LOCK_KEY);
+            lock = lockRegistry.obtain(MY_LOCK_KEY);
+        } catch (Exception e) {
+            // in a production environment this should be a log statement
+            System.out.println(String.format("Unable to obtain lock: %s", MY_LOCK_KEY));
         }
 
-        Employee employee = employeeRepository.findById(empId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + empId + " not found."));
+        String returnVal = null;
+        try {
+            if (lock.tryLock()) {
+                returnVal = "jdbc lock successful!!!";
+            } else {
+                returnVal = "jdbc lock unsuccessful";
+            }
+        } catch (Exception e) {
+            // in a production environment this should log and do something else
+            e.printStackTrace();
+        } finally {
+            // always have this in a `finally` block in case anything goes wrong
+            lock.unlock();
+        }
+        System.out.println("Scheduler Working: " + returnVal);
+        return returnVal;
+    }
 
-        ProjectDTO projectDTO = externalServiceClient.getProjectById(projectId);
+    @Scheduled(fixedRate = 60000)
+    public List<Employee> checkEmployeeWithoutProjectAllocation() throws InterruptedException {
 
-        employeeProject.setEmpId(employee.getEmpId());
-        employeeProject.setProjectId(projectDTO.getProjectId());
+        Lock lock = lockRegistry.obtain(MY_LOCK_KEY);
 
-        return employeeProjectRepository.save(employeeProject);
+        boolean acquired = lock.tryLock(20, TimeUnit.SECONDS);
+        if (acquired) {
+            try {
+                log.info("Acquired lock");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+//            finally {
+//                lock.unlock();
+//                log.info("Release lock");
+//            }
+
+        }
+        else {
+            log.info("No lock");
+        }
+
+
+        return employeeRepository.employeeWithoutProjectAllocation();
+        //return returnVal;
+
     }
 }
+
 
 
 

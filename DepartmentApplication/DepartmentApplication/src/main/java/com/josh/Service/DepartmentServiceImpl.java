@@ -1,17 +1,35 @@
 package com.josh.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.josh.Entity.Department;
 import com.josh.Exception.ResourceNotFoundException;
 import com.josh.Repository.DepartmentRepository;
+import io.dapr.Topic;
+import io.dapr.client.domain.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.annotation.RequiredTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class DepartmentServiceImpl implements DepartmentService {
+//    @Autowired
+//    private DepartmentRepository departmentRepository;
+
+    private final DepartmentRepository departmentRepository;
+
     @Autowired
-    private DepartmentRepository departmentRepository;
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
+        this.departmentRepository = departmentRepository;
+    }
 
     @Override
     public Department getDepartmentByName(String name) {
@@ -53,4 +71,15 @@ public class DepartmentServiceImpl implements DepartmentService {
             departmentRepository.deleteById(id);
         }
     }
+
+  //  private static final Logger log = LoggerFactory.getLogger(DepartmentService.class);
+
+//    public void processCloudEvent(CloudEvent<String> cloudEvent) {
+//        try {
+//
+//            log.info("Processing cloud event data: " + cloudEvent.getData());
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

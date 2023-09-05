@@ -94,4 +94,19 @@ public class EmployeeController {
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
+    @PutMapping("/lock")
+    public String lock(){
+        return employeeService.lock();
+    }
+    @PutMapping("/properLock")
+    public String properLock(){
+        return employeeService.properLock();
+    }
+
+    @GetMapping("/employee-without-project")
+    public ResponseEntity<List<Employee>> employeeWithoutProject() throws InterruptedException {
+        List<Employee>employees=employeeService.checkEmployeeWithoutProjectAllocation();
+        return ResponseEntity.ok(employees);
+     // return employeeService.checkEmployeeWithoutProjectAllocation();
+    }
 }

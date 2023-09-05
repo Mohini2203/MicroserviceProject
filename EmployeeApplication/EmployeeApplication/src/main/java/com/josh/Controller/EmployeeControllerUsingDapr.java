@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -24,8 +23,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class EmployeeControllerUsingDapr {
 
-    @Autowired
-    RestTemplate restTemplate;
+//    @Autowired
+//    RestTemplate restTemplate;
 
     @Autowired
     private EmployeeService employeeService;
@@ -55,28 +54,24 @@ public class EmployeeControllerUsingDapr {
     }
 
 
+    @PostMapping("/employee-project")
+    public ResponseEntity<EmployeeProject> addEmployeeProject(@RequestBody EmployeeProjectDTO employeeProjectDTO) throws Exception {
+        Long projectId = employeeProjectDTO.getProjectId();
+        Long empId = employeeProjectDTO.getEmpId();
+
+        System.out.println("Received project ID: " + projectId);
+        System.out.println("Received employee ID: " + empId);
+
+        Employee employee = employeeService.getEmployee(empId);
+        Mono<ProjectDTO> projectDTOMono = daprExternalServiceClient.invokeGetProjectById(projectId);
+
+        EmployeeProject employeeProject = new EmployeeProject();
+        employeeProject.setProjectId(projectDTOMono.block().getProjectId());
+        employeeProject.setEmpId(employee.getEmpId());
 
 
-    @PostMapping("/employee_project")
-    public Mono<ResponseEntity<String>> addEmployeeProject(@RequestBody EmployeeProjectDTO employeeProjectDTO) throws Exception {
-     log.info("project id" +employeeProjectDTO.getProjectId());
-     log.info("employee id" +employeeProjectDTO.getEmpId());
-        return daprExternalServiceClient.getProjectById(employeeProjectDTO.getProjectId())
-                .flatMap(projectDTO -> {
-                    Mono<Employee> employeeMono = Mono.fromCallable(() ->
-                            employeeService.getEmployee(employeeProjectDTO.getEmpId()));
-
-                    return employeeMono.flatMap(employee -> {
-                        EmployeeProject employeeProject = new EmployeeProject();
-                        employeeProject.setEmpId(employee.getEmpId());
-                        employeeProject.setProjectId(projectDTO.getProjectId());
-
-                        return Mono.fromRunnable(() -> employeeService.addEmployeeProject(employeeProject))
-                                .thenReturn(new ResponseEntity<>("Employee project added successfully.", HttpStatus.OK));
-                    });
-                })
-                .onErrorResume(Exception.class, ex ->
-                        Mono.just(new ResponseEntity<>("Error adding employee project.", HttpStatus.INTERNAL_SERVER_ERROR))
-                );
+        return new ResponseEntity<EmployeeProject>(employeeService.addEmployeeProject(employeeProject), HttpStatus.OK);
     }
+
 }
+

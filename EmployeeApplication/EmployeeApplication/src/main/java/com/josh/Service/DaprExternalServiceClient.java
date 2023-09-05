@@ -26,41 +26,32 @@ public class DaprExternalServiceClient {
     @Value("${appId}")
     private String appId;
 
-    @Value(("${projectAppId}"))
-    private String projectAppId;
+    @Value(("${appID}"))
+    private String appID;
 
 
     public Mono<DepartmentDTO> getDepartmentById(Long departmentId) throws Exception {
-
-
         try (DaprClient daprClient = new DaprClientBuilder().build()) {
             return daprClient.invokeMethod(
-                    "appId",
-                    projectServiceUrl + departmentId,
+                    appId,
+
+                    departmentServiceUrl + departmentId,
                     null,
                     HttpExtension.GET,
                     DepartmentDTO.class
             );
-
         }
-
     }
-
-
-    public Mono<ProjectDTO> getProjectById(Long projectId) throws Exception {
+    public Mono<ProjectDTO> invokeGetProjectById(Long projectId) throws Exception {
         try (DaprClient daprClient = new DaprClientBuilder().build()) {
             return daprClient.invokeMethod(
-                    "projectAppId",
+                    appID,
                     projectServiceUrl + projectId,
                     null,
                     HttpExtension.GET,
                     ProjectDTO.class
             );
-
         }
-
-
     }
-
 }
 

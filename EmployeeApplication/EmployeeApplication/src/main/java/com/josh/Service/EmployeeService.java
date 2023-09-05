@@ -21,4 +21,14 @@ public interface EmployeeService {
    // Employee addEmployeeDepartment(Long empId, Long departmentId);
 
 //    EmployeeProject addEmployeeProject(Long empId, Long projectId);
+    //Employee sendEmployeeMessage(Long empId, String empName);
+
+
+    String lock();
+
+    String properLock();
+//    void failLock();
+//    String properLock();
+
+    List<Employee> checkEmployeeWithoutProjectAllocation() throws InterruptedException;
 }
