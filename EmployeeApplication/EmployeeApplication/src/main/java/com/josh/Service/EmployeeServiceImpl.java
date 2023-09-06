@@ -65,17 +65,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         notificationService.sendNotification(notificationMessage);
         return saveEmployee;
     }
-//    @Override
-//    public Employee addEmployee(Employee employee) {
-//        Employee saveEmployee = employeeRepository.save(employee);
-//
-//
-//        String employeeMessage = "New Employee added with " + saveEmployee.getEmpId() + " and name " + saveEmployee.getEmpName();
-//
-//
-//        notificationService.sendNotification(employeeMessage);
-//        return saveEmployee;
-//    }
+
 
 
     @Override
@@ -98,27 +88,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
-    //    @Override
-//    public EmployeeProject addEmployeeProject(EmployeeProject employeeProject) {
-//        Long empId = employeeProject.getEmpId();
-//        Long projectId = employeeProject.getProjectId();
-//
-//        Optional<EmployeeProject> existingProject = employeeProjectRepository.findById(new EmployeeProjectId(empId, projectId));
-//
-//        if (existingProject.isPresent()) {
-//            throw new ResourceNotFoundException("Employee project with empId " + empId + " and projectId " + projectId + " already exists.");
-//        }
-//
-//        Employee employee = employeeRepository.findById(empId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + empId + " not found."));
-//
-//        ProjectDTO projectDTO = externalServiceClient.getProjectById(projectId);
-//
-//        employeeProject.setEmpId(employee.getEmpId());
-//        employeeProject.setProjectId(projectDTO.getProjectId());
-//
-//        return employeeProjectRepository.save(employeeProject);
-//    }
+
 
     @Scheduled(fixedRate = 120000)
     public String lock() {
@@ -183,7 +153,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     log.info("Checking employee: " + employee.getEmpId());
 
 
-                    String notificationMessage = "The employee is not allocated to the project with id" + employee.getEmpId();
+                    String notificationMessage = "The employee is not allocated to the project with id :" + employee.getEmpId();
                     notificationService.sendNotification(notificationMessage);
                 }
             } catch (Exception e) {
@@ -194,7 +164,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 //                log.info("Released Lock!");
 //            }
         } else {
-            log.info("Another instance is already running the check.");
+            log.info("Another instance is already running.");
         }
 
         return null;

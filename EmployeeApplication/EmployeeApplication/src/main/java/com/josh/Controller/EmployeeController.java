@@ -107,6 +107,6 @@ public class EmployeeController {
     public ResponseEntity<List<Employee>> employeeWithoutProject() throws InterruptedException {
         List<Employee>employees=employeeService.checkEmployeeWithoutProjectAllocation();
         return ResponseEntity.ok(employees);
-     // return employeeService.checkEmployeeWithoutProjectAllocation();
+
     }
 }

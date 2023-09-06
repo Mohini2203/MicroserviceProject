@@ -35,10 +35,7 @@ public class EmployeeApplication {
         return daprClient;
     }
 
-//    @Bean
-//    public DefaultLockRepository DefaultLockRepository(DataSource dataSource){
-//        return new DefaultLockRepository(dataSource);
-//    }
+
 
     @Bean
     public DefaultLockRepository DefaultLockRepository(DataSource dataSource){

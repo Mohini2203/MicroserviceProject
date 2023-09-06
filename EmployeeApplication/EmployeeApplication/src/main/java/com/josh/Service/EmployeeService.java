@@ -27,7 +27,7 @@ public interface EmployeeService {
     String lock();
 
     String properLock();
-//    void failLock();
+
 //    String properLock();
 
     List<Employee> checkEmployeeWithoutProjectAllocation() throws InterruptedException;
