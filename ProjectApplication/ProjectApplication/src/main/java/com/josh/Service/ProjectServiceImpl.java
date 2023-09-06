@@ -3,17 +3,24 @@ package com.josh.Service;
 import com.josh.Entity.Project;
 import com.josh.Exception.ResourceNotFoundException;
 import com.josh.Repository.ProjectRepository;
+import io.dapr.Topic;
+import io.dapr.client.domain.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class ProjectServiceImpl implements  ProjectService {
 
     @Autowired
     ProjectRepository projectRepository;
+
+
 
     @Override
     public Project getProjectByName(String projectName) {
@@ -56,6 +63,18 @@ public class ProjectServiceImpl implements  ProjectService {
             projectRepository.deleteById(projectId);
         }
     }
+
+//    @Topic(name = "employee-topic", pubsubName = "kafka-pubsub")
+//    @KafkaListener(topics = "employee-topic")
+//    public void consumeEmployeeMessage(CloudEvent event) {
+//       // String employeeMessage = event.getData().toObject(String.class);
+//        String employeeMessage = (String) event.getData();
+//       //log.info (String.format("employee event received in stock service => %s", event.toString()));
+//
+//        System.out.println("Received Employee Message in Project Service: " + employeeMessage);
+//
+//    }
+
 //    public boolean addEmployeeToProject(Long projectId) {
 //        Project project = projectRepository.findById(projectId).orElse(null);
 //

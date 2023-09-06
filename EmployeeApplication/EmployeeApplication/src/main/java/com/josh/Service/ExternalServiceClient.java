@@ -12,17 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ExternalServiceClient {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${external.service.department.url}")
-    private String departmentServiceUrl;
+//    @Value("${external.service.department.url}")
+//    private String departmentServiceUrl;
 
-    @Value("${external.service.project.url}")
-    private String projectServiceUrl;
+//    @Value("${external.service.project.url}")
+//    private String projectServiceUrl;
 
 //    @Value("${external.service.department.appId}")
 //    private String departmentAppId;
@@ -38,12 +39,12 @@ public class ExternalServiceClient {
     public DepartmentDTO getDepartmentById(Long departmentId) {
         try {
             ResponseEntity<DepartmentDTO> response = restTemplate.exchange(
-                    //"http://localhost:8082/departments/{departmentId}",
-                    departmentServiceUrl+departmentId,
+                    "http://localhost:8086/departments/{departmentId}",
+                   // departmentServiceUrl+departmentId,
                     HttpMethod.GET,
                     null,
-                    DepartmentDTO.class
-                    //departmentId
+                    DepartmentDTO.class,
+                    departmentId
             );
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -67,8 +68,8 @@ public class ExternalServiceClient {
     public ProjectDTO getProjectById(Long projectId) {
         try {
             ResponseEntity<ProjectDTO> response = restTemplate.exchange(
-                  //  "http://localhost:8083/projects/{projectId}",
-                    projectServiceUrl,
+                  "http://localhost:8087/projects/{projectId}",
+                    //projectServiceUrl+projectId,
                     HttpMethod.GET,
                     null,
                     ProjectDTO.class,
@@ -92,4 +93,6 @@ public class ExternalServiceClient {
             throw new EmployeeServiceException("Error connecting to the project service: " + ex.getMessage());
         }
     }
+
+
 }

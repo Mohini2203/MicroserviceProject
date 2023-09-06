@@ -5,6 +5,7 @@ import com.josh.Entity.EmployeeProject;
 import com.josh.Exception.ResourceNotFoundException;
 import com.josh.Repository.EmployeeProjectRepository;
 import com.josh.Repository.EmployeeRepository;
+import io.lettuce.core.dynamic.support.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
@@ -142,7 +143,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             //var  lock = lockRegistry.obtain(MY_LOCK_KEY);
             lock = lockRegistry.obtain(MY_LOCK_KEY);
         } catch (Exception e) {
-            // in a production environment this should be a log statement
+
             System.out.println(String.format("Unable to obtain lock: %s", MY_LOCK_KEY));
         }
 
@@ -154,10 +155,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 returnVal = "jdbc lock unsuccessful";
             }
         } catch (Exception e) {
-            // in a production environment this should log and do something else
+
             e.printStackTrace();
         } finally {
-            // always have this in a `finally` block in case anything goes wrong
+
             lock.unlock();
         }
         System.out.println("Scheduler Working: " + returnVal);
@@ -169,32 +170,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Lock lock = lockRegistry.obtain(MY_LOCK_KEY);
 
-        boolean acquired = lock.tryLock(20, TimeUnit.SECONDS);
+        boolean acquired = lock.tryLock(1, TimeUnit.MINUTES);
         if (acquired) {
             try {
-                log.info("Acquired lock");
 
+                log.info("Acquired Lock!");
+
+
+                List<Employee> employees = employeeRepository.employeeWithoutProjectAllocation();
+
+                for (Employee employee : employees) {
+                    log.info("Checking employee: " + employee.getEmpId());
+
+
+                    String notificationMessage = "The employee is not allocated to the project with id" + employee.getEmpId();
+                    notificationService.sendNotification(notificationMessage);
+                }
             } catch (Exception e) {
-                e.printStackTrace();
+                ReflectionUtils.rethrowRuntimeException(e);
             }
-
 //            finally {
 //                lock.unlock();
-//                log.info("Release lock");
+//                log.info("Released Lock!");
 //            }
-
-        }
-        else {
-            log.info("No lock");
+        } else {
+            log.info("Another instance is already running the check.");
         }
 
-
-        return employeeRepository.employeeWithoutProjectAllocation();
-        //return returnVal;
-
+        return null;
     }
 }
-
 
 
 

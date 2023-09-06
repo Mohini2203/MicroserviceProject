@@ -1,15 +1,19 @@
 package com.josh.Controller;
 
-import com.josh.DTO.EmployeeProjectDTO;
 import com.josh.DTO.ProjectDTO;
 import com.josh.Entity.Project;
 import com.josh.Mapper.ProjectMapper;
 import com.josh.Service.ProjectService;
+import io.dapr.Topic;
+import io.dapr.client.domain.CloudEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +25,8 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @Value("${appId}")
-    private String ProjectAppId;
+//    @Value("${appID}")
+//    private String appID;
 
     @GetMapping
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
@@ -61,15 +65,17 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-//    @PostMapping("/projects/addEmployee")
-//    public ResponseEntity<String> addEmployeeProject(@RequestBody EmployeeProjectDTO employeeProjectDTO) {
-//        Long projectId = employeeProjectDTO.getProjectId();
-//        boolean isAddedToProject = projectService.addEmployeeToProject(projectId);
-//
-//        if (isAddedToProject) {
-//            return ResponseEntity.ok("Employee added to the project successfully.");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Project not found.");
-//        }
-//    }
+    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
+
+    @Topic(name = "employee-department", pubsubName = "employee-pub-sub")
+    @PostMapping(path = "/project")
+    public Mono<Void> getConsume(@RequestBody(required = false) CloudEvent<String> cloudEvent) {
+        return Mono.fromRunnable(() -> {
+            try {
+                log.info("subscriber received"+cloudEvent.getData());
+            }catch (Exception e){
+                throw  new RuntimeException(e);
+            }
+        });
+    }
 }
