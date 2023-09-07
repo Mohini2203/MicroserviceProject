@@ -42,7 +42,7 @@ public class EmployeeMapper {
         EmployeeProject employeeProject = new EmployeeProject();
         employeeProject.setEmpId(employeeProjectDTO.getEmpId());
         employeeProject.setProjectId(employeeProjectDTO.getProjectId());
-        // Set other properties if needed
+
         return employeeProject;
     }
 
@@ -50,7 +50,7 @@ public class EmployeeMapper {
         EmployeeProjectDTO employeeProjectDTO = new EmployeeProjectDTO();
         employeeProjectDTO.setEmpId(employeeProject.getEmpId());
         employeeProjectDTO.setProjectId(employeeProject.getProjectId());
-        // Set other properties if needed
+
         return employeeProjectDTO;
     }
 

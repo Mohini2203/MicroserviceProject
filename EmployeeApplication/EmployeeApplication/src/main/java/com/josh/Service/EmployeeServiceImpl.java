@@ -5,17 +5,14 @@ import com.josh.Entity.EmployeeProject;
 import com.josh.Exception.ResourceNotFoundException;
 import com.josh.Repository.EmployeeProjectRepository;
 import com.josh.Repository.EmployeeRepository;
-import io.lettuce.core.dynamic.support.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 @Service
 @Slf4j
@@ -65,7 +62,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         notificationService.sendNotification(notificationMessage);
         return saveEmployee;
     }
-
+//    @Override
+//    public List<Employee> addEmployee(List<Employee> employees) {
+//        List<Employee> savedEmployees = employeeRepository.saveAll(employees);
+//
+//        for (Employee savedEmployee : savedEmployees) {
+//            String notificationMessage = "New Employee added with ID: " + savedEmployee.getEmpId() + " and name: " + savedEmployee.getEmpName();
+//            notificationService.sendNotification(Collections.singletonList(notificationMessage));
+//        }
+//
+//        return savedEmployees;
+//    }
 
 
     @Override
@@ -87,88 +94,58 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeProjectRepository.save(employeeProject);
     }
 
+//    @Override
+//    public List<Employee> getEmployeeWithoutProjectAllocation() {
+//        return employeeRepository.employeeWithoutProjectAllocation();
+//    }
 
 
-
-    @Scheduled(fixedRate = 120000)
-    public String lock() {
-        var lock = lockRegistry.obtain(MY_LOCK_KEY);
-        String returnVal = null;
-        System.out.println("Scheduler Working: ");
-        if (lock.tryLock()) {
-            returnVal = "jdbc lock successful";
-        } else {
-            returnVal = "jdbc lock unsuccessful";
-        }
-        lock.unlock();
-        return returnVal;
-    }
-
-    @Scheduled(fixedRate = 120000)
-    @Override
-    public String properLock() {
-        Lock lock = null;
-
-        try {
-            //var  lock = lockRegistry.obtain(MY_LOCK_KEY);
-            lock = lockRegistry.obtain(MY_LOCK_KEY);
-        } catch (Exception e) {
-
-            System.out.println(String.format("Unable to obtain lock: %s", MY_LOCK_KEY));
-        }
-
-        String returnVal = null;
-        try {
-            if (lock.tryLock()) {
-                returnVal = "jdbc lock successful!!!";
-            } else {
-                returnVal = "jdbc lock unsuccessful";
-            }
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        } finally {
-
-            lock.unlock();
-        }
-        System.out.println("Scheduler Working: " + returnVal);
-        return returnVal;
-    }
-
-    @Scheduled(fixedRate = 60000)
-    public List<Employee> checkEmployeeWithoutProjectAllocation() throws InterruptedException {
-
-        Lock lock = lockRegistry.obtain(MY_LOCK_KEY);
-
-        boolean acquired = lock.tryLock(1, TimeUnit.MINUTES);
-        if (acquired) {
-            try {
-
-                log.info("Acquired Lock!");
-
-
-                List<Employee> employees = employeeRepository.employeeWithoutProjectAllocation();
-
-                for (Employee employee : employees) {
-                    log.info("Checking employee: " + employee.getEmpId());
-
-
-                    String notificationMessage = "The employee is not allocated to the project with id :" + employee.getEmpId();
-                    notificationService.sendNotification(notificationMessage);
-                }
-            } catch (Exception e) {
-                ReflectionUtils.rethrowRuntimeException(e);
-            }
-//            finally {
-//                lock.unlock();
-//                log.info("Released Lock!");
+//    @Scheduled(fixedRate = 120000)
+//    public String lock() {
+//        var lock = lockRegistry.obtain(MY_LOCK_KEY);
+//        String returnVal = null;
+//        System.out.println("Scheduler Working: ");
+//        if (lock.tryLock()) {
+//            returnVal = "jdbc lock successful";
+//        } else {
+//            returnVal = "jdbc lock unsuccessful";
+//        }
+//        lock.unlock();
+//        return returnVal;
+//    }
+//
+//    @Scheduled(fixedRate = 120000)
+//    @Override
+//    public String properLock() {
+//        Lock lock = null;
+//
+//        try {
+//            //var  lock = lockRegistry.obtain(MY_LOCK_KEY);
+//            lock = lockRegistry.obtain(MY_LOCK_KEY);
+//        } catch (Exception e) {
+//
+//            System.out.println(String.format("Unable to obtain lock: %s", MY_LOCK_KEY));
+//        }
+//
+//        String returnVal = null;
+//        try {
+//            if (lock.tryLock()) {
+//                returnVal = "jdbc lock successful!!!";
+//            } else {
+//                returnVal = "jdbc lock unsuccessful";
 //            }
-        } else {
-            log.info("Another instance is already running.");
-        }
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//        } finally {
+//
+//            lock.unlock();
+//        }
+//        System.out.println("Scheduler Working: " + returnVal);
+//        return returnVal;
+//    }
 
-        return null;
-    }
+
 }
 
 

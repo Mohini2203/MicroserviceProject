@@ -65,17 +65,17 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
-
-    @Topic(name = "employee-department", pubsubName = "employee-pub-sub")
-    @PostMapping(path = "/project")
-    public Mono<Void> getConsume(@RequestBody(required = false) CloudEvent<String> cloudEvent) {
-        return Mono.fromRunnable(() -> {
-            try {
-                log.info("subscriber received"+cloudEvent.getData());
-            }catch (Exception e){
-                throw  new RuntimeException(e);
-            }
-        });
-    }
+//    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
+//
+//    @Topic(name = "employee-department", pubsubName = "employee-pub-sub")
+//    @PostMapping(path = "/project")
+//    public Mono<Void> getConsume(@RequestBody(required = false) CloudEvent<String> cloudEvent) {
+//        return Mono.fromRunnable(() -> {
+//            try {
+//                log.info("subscriber received"+cloudEvent.getData());
+//            }catch (Exception e){
+//                throw  new RuntimeException(e);
+//            }
+//        });
+//    }
 }

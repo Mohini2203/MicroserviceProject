@@ -4,7 +4,6 @@ import com.josh.DTO.DepartmentDTO;
 import com.josh.DTO.ProjectDTO;
 import com.josh.Exception.EmployeeServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 @Service
 public class ExternalServiceClient {
@@ -40,7 +38,7 @@ public class ExternalServiceClient {
         try {
             ResponseEntity<DepartmentDTO> response = restTemplate.exchange(
                     "http://localhost:8086/departments/{departmentId}",
-                   // departmentServiceUrl+departmentId,
+                    // departmentServiceUrl+departmentId,
                     HttpMethod.GET,
                     null,
                     DepartmentDTO.class,
@@ -68,7 +66,7 @@ public class ExternalServiceClient {
     public ProjectDTO getProjectById(Long projectId) {
         try {
             ResponseEntity<ProjectDTO> response = restTemplate.exchange(
-                  "http://localhost:8087/projects/{projectId}",
+                    "http://localhost:8087/projects/{projectId}",
                     //projectServiceUrl+projectId,
                     HttpMethod.GET,
                     null,

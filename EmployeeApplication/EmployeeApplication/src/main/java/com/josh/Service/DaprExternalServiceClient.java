@@ -42,6 +42,7 @@ public class DaprExternalServiceClient {
             );
         }
     }
+
     public Mono<ProjectDTO> invokeGetProjectById(Long projectId) throws Exception {
         try (DaprClient daprClient = new DaprClientBuilder().build()) {
             return daprClient.invokeMethod(

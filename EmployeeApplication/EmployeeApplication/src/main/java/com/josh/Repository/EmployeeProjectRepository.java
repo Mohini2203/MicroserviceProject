@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmployeeProjectRepository extends JpaRepository<EmployeeProject, EmployeeProjectId> {
-  //  EmployeeProject findById(EmployeeProjectId employeeProjectId);
 
 
 }
